@@ -554,6 +554,21 @@ function updateForDate(dateObj){
   // (Optionnel mais recommandé) Si ton bandeau fréquences existe déjà, appelle-le ici aussi :
   // updateFreqBar(rules);
 }
+  // Initialisation + sélecteur de date
+const picker = document.getElementById("datePicker");
+const today = new Date();
+
+// Met la date du jour dans l'input (si présent)
+if (picker) {
+  picker.value = iso(today);
+  picker.addEventListener("change", () => {
+    if (!picker.value) return;
+    updateForDate(new Date(picker.value + "T00:00:00"));
+  });
+}
+
+// Affiche le service du jour au chargement
+updateForDate(today);
 
 // légende fréquences
 const freqs = legendFromRules(rules);
