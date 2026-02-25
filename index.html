@@ -174,17 +174,19 @@
   padding:10px 10px 10px 12px;
   border-right:1px solid rgba(0,0,0,.06);
   display:flex;flex-direction:column;justify-content:center;
-  background:#fff;
 }
 .seg:last-child{border-right:0}
-
-.seg[data-f="none"]{
-  background:#f2f2f4;
-  color:#9a9aa5;
+.seg .t{font-weight:900;font-size:13px}
+.seg .s{color:var(--muted);font-weight:900;font-size:12px;margin-top:2px}
+.seg:before{
+  content:"";
+  position:absolute;left:0;top:0;bottom:0;width:6px;
+  background:var(--line);
+  opacity:.18;
 }
-.seg[data-f="none"] .t{
-  font-weight:800;
-}
+.seg[data-f="16"]:before{opacity:.45;}
+.seg[data-f="24"]:before{opacity:.30;}
+.seg[data-f="48"]:before{opacity:.18;}
 
   .icon{width:16px;height:16px;display:inline-block;vertical-align:-3px}
 </style>
@@ -222,25 +224,12 @@
 
     <div class="content">
       <div class="info">
-  <div>
-    <div class="muted">Service du jour</div>
-    <div class="k" id="periodLine">…</div>
-  </div>
-
-  <div>
-    <div class="muted">Premier départ</div>
-    <div class="k" id="firstDeparture">--:--</div>
-  </div>
-
-  <div>
-    <div class="muted">Dernier départ</div>
-    <div class="k" id="lastDeparture">--:--</div>
-  </div>
-
-  <div class="badge" id="gridBadge">
-    <span class="badgeDot"></span> …
-  </div>
-</div>
+        <div>
+          <div class="muted">Service du jour</div>
+          <div class="k" id="periodLine">…</div>
+        </div>
+        <div class="badge" id="gridBadge"><span class="badgeDot"></span> …</div>
+      </div>
 
       <div class="freqCard">
         <div class="freqHead">
@@ -508,17 +497,7 @@ for(const h of byHour.keys()){
   minHour = Math.min(minHour, h);
   maxHour = Math.max(maxHour, h);
 }
-// Premier & dernier départ
-if(departures.length > 0){
-  const first = minToHM(departures[0]);
-  const last  = minToHM(departures[departures.length-1]);
-
-  document.getElementById("firstDeparture").textContent =
-    `${pad2(first.h)}:${pad2(first.m)}`;
-
-  document.getElementById("lastDeparture").textContent =
-    `${pad2(last.h)}:${pad2(last.m)}`;
-}
+if (minHour === 24){ minHour = 5; maxHour = 20; }
 
 const cuts = hourCutsFromRules(rules);
 const tbody = document.getElementById("tbody");
@@ -549,13 +528,6 @@ function labelRange(h1,m1,h2,m2){
   const a = `${pad2(h1)}:${pad2(m1)}`;
   const b = (h2===24 && m2===0) ? "00:00" : `${pad2(h2)}:${pad2(m2)}`;
   return `${a} – ${b}`;
-  if(f === null){
-  return `
-    <div class="seg" data-f="none" style="flex:${width}">
-      <div class="t">${labelRange(h1,m1,h2,m2)}</div>
-      <div class="s">Pas de service</div>
-    </div>
-  `;
 }
 document.getElementById("freqBar").innerHTML = rules.map(r => {
   const [h1,m1,h2,m2,f] = r;
