@@ -577,7 +577,7 @@ const freqs = legendFromRules(rules);
 document.getElementById("legendBox").innerHTML = freqs.map(f => {
   const dotClass = (f === 16) ? "dot strong" : "dot";
   return `<span class="pill"><span class="${dotClass}"></span><b>${f}</b> min</span>`;
-}).join("");
+  
 // Bandeau fréquences (segments)
 function labelRange(h1,m1,h2,m2){
   const a = `${pad2(h1)}:${pad2(m1)}`;
