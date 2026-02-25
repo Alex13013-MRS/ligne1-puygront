@@ -238,15 +238,31 @@ function minToHM(t){
   return {h, m};
 }
 function buildDepartures(rules){
-  // rules: [[h1,m1,h2,m2,f], ...]
+  // rules: [[h1,m1,h2,m2,f], ...] triées et contiguës (fin = début suivant)
   const times = [];
-  for(const [h1,m1,h2,m2,f] of rules){
-    let start = toMin(h1,m1);
-    let end = toMin(h2,m2);
-    for(let t=start; t<end; t+=f){
+  if(!rules || rules.length === 0) return times;
+
+  // départ initial = début de la 1ère plage
+  let t = toMin(rules[0][0], rules[0][1]);
+
+  for (let i = 0; i < rules.length; i++) {
+    const [h1,m1,h2,m2,f] = rules[i];
+    const start = toMin(h1,m1);
+    const end   = toMin(h2,m2);
+
+    // sécurité: si on a un "trou" (t avant start), on recale au start
+    if (t < start) t = start;
+
+    // on ajoute les départs tant qu'on est dans la plage
+    while (t < end && t < 1440) {
       times.push(t);
+      t += f;
     }
+
+    // IMPORTANT: on ne recale pas t à "end" quand on change de plage.
+    // t reste la suite naturelle, et la prochaine plage prendra le relais.
   }
+
   // dédoublonne + tri
   return Array.from(new Set(times)).sort((a,b)=>a-b);
 }
