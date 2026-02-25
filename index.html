@@ -472,158 +472,112 @@ function legendFromRules(rules){
 /* =========================
    CALCUL DU JOUR
 ========================= */
-const now = new Date();
-const todayISO = iso(now);
-const jf = frenchPublicHolidaysISO(now.getFullYear());
+let currentDate = new Date();
 
-let periode = "normal";
-for (const p of VACANCES){
-  if (inRange(todayISO, p[0], p[1])) { periode="vacances"; break; }
-}
+function updateForDate(dateObj){
 
-let type = "luve";
-if (now.getDay() === 6) type = "sa";
-if (now.getDay() === 0 || jf.has(todayISO)) type = "di";
+  const todayISO = iso(dateObj);
+  const jf = frenchPublicHolidaysISO(dateObj.getFullYear());
 
-const rules = SERVICES[periode][type];
-
-/* =========================
-   RENDU EN-TÊTE
-========================= */
-document.documentElement.style.setProperty("--line", LINE.color);
-document.getElementById("lineTitle").textContent = `${LINE.terminusA} ⇄ ${LINE.terminusB}`;
-document.getElementById("dirATxt").textContent = `${LINE.terminusA} → ${LINE.terminusB}`;
-document.getElementById("dirBTxt").textContent = `${LINE.terminusB} → ${LINE.terminusA}`;
-
-const frDate = now.toLocaleDateString("fr-FR",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
-document.getElementById("todayTxt").textContent = `Horaires du jour — ${frDate}`;
-
-const labelPeriode = (periode==="vacances") ? "Période vacances scolaires" : "Période normale";
-const labelType = (type==="luve") ? "LU–VE" : (type==="sa") ? "Samedi" : "Dimanche & JF";
-
-document.getElementById("periodLine").textContent =
-  `${labelPeriode} — ${labelType}${jf.has(todayISO) ? " (jour férié)" : ""}`;
-document.getElementById("gridBadge").innerHTML =
-  `<span class="badgeDot"></span> ${labelType}`;
-
-/* =========================
-   GRILLE
-   -> mêmes horaires dans les 2 sens (pour l’instant)
-========================= */
-const departures = buildDeparturesContinuous(rules);
-  // Premier & dernier départ
-if(departures.length > 0){
-  const first = minToHM(departures[0]);
-  const last  = minToHM(departures[departures.length-1]);
-
-  document.getElementById("firstDeparture").textContent =
-    `${pad2(first.h)}:${pad2(first.m)}`;
-
-  document.getElementById("lastDeparture").textContent =
-    `${pad2(last.h)}:${pad2(last.m)}`;
-}
-const byHour = groupByHour(departures);
-
-// plage d’affichage
-let minHour = 24, maxHour = 0;
-for(const h of byHour.keys()){
-  minHour = Math.min(minHour, h);
-  maxHour = Math.max(maxHour, h);
-}
-if (minHour === 24){ minHour = 5; maxHour = 20; }
-
-const cuts = hourCutsFromRules(rules);
-const tbody = document.getElementById("tbody");
-
-let html = "";
-for(let h=minHour; h<=maxHour; h++){
-  const mins = byHour.get(h) || [];
-  const cutClass = cuts.has(h) ? "cut" : "";
-  const peakClass = isPeakHour(h, rules) ? "peak" : "";
-  html += `
-    <tr class="${cutClass} ${peakClass}">
-      <td class="hcol">${pad2(h)}h</td>
-      <td class="mins">${renderMinutesChips(mins)}</td>
-      <td class="mins">${renderMinutesChips(mins)}</td>
-    </tr>
-  `;
-}
-tbody.innerHTML = html;
-
-// légende fréquences
-const freqs = legendFromRules(rules);
-document.getElementById("legendBox").innerHTML = freqs.map(f => {
-  const dotClass = (f === 16) ? "dot strong" : "dot";
-  return `<span class="pill"><span class="${dotClass}"></span><b>${f}</b> min</span>`;
-}).join("");
-// Bandeau fréquences (segments)
-function labelRange(h1,m1,h2,m2){
-  const a = `${pad2(h1)}:${pad2(m1)}`;
-  const b = (h2===24 && m2===0) ? "00:00" : `${pad2(h2)}:${pad2(m2)}`;
-  return `${a} – ${b}`;
-}
-// =========================
-// Bandeau fréquences complet
-// =========================
-
-function labelRange(h1,m1,h2,m2){
-  const a = `${pad2(h1)}:${pad2(m1)}`;
-  const b = (h2===24 && m2===0) ? "00:00" : `${pad2(h2)}:${pad2(m2)}`;
-  return `${a} – ${b}`;
-}
-
-function buildFrequencySegments(rules){
-  const segments = [];
-
-  // Avant premier service
-  const first = rules[0];
-  if(first){
-    const [h1,m1] = first;
-    if(h1 > 0 || m1 > 0){
-      segments.push({h1:0,m1:0,h2:h1,m2:m1,f:null});
-    }
+  let periode = "normal";
+  for (const p of VACANCES){
+    if (inRange(todayISO, p[0], p[1])) { periode="vacances"; break; }
   }
 
-  // Segments de service
-  for(const r of rules){
-    const [h1,m1,h2,m2,f] = r;
-    segments.push({h1,m1,h2,m2,f});
+  let type = "luve";
+  if (dateObj.getDay() === 6) type = "sa";
+  if (dateObj.getDay() === 0 || jf.has(todayISO)) type = "di";
+
+  const rules = SERVICES[periode][type];
+
+  // Mise à jour bandeau
+  const frDate = dateObj.toLocaleDateString("fr-FR",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+  document.getElementById("todayTxt").textContent = `Horaires du jour — ${frDate}`;
+
+  const labelPeriode = (periode==="vacances") ? "Période vacances scolaires" : "Période normale";
+  const labelType = (type==="luve") ? "LU–VE" : (type==="sa") ? "Samedi" : "Dimanche & JF";
+
+  document.getElementById("periodLine").textContent =
+    `${labelPeriode} — ${labelType}${jf.has(todayISO) ? " (jour férié)" : ""}`;
+  document.getElementById("gridBadge").innerHTML =
+    `<span class="badgeDot"></span> ${labelType}`;
+
+  // Génération horaires
+  const departures = buildDeparturesContinuous(rules);
+  const byHour = groupByHour(departures);
+
+  // Premier / dernier
+  if(departures.length > 0){
+    const first = minToHM(departures[0]);
+    const last  = minToHM(departures[departures.length-1]);
+
+    document.getElementById("firstDeparture").textContent =
+      `${pad2(first.h)}:${pad2(first.m)}`;
+    document.getElementById("lastDeparture").textContent =
+      `${pad2(last.h)}:${pad2(last.m)}`;
+
+    const duration = departures[departures.length-1] - departures[0];
+    const dh = Math.floor(duration/60);
+    const dm = duration%60;
+
+    document.getElementById("amplitude").textContent =
+      `${pad2(first.h)}:${pad2(first.m)} – ${pad2(last.h)}:${pad2(last.m)} (${dh}h${pad2(dm)})`;
+
+    const arrivalT = (departures[departures.length-1] + TRAVEL_MIN) % 1440;
+    const a = minToHM(arrivalT);
+    document.getElementById("lastArrival").textContent =
+      `${pad2(a.h)}:${pad2(a.m)}`;
   }
 
-  // Après dernier service
-  const last = rules[rules.length-1];
-  if(last){
-    const [h1,m1,h2,m2] = last;
-    if(h2 < 24){
-      segments.push({h1:h2,m1:m2,h2:24,m2:0,f:null});
-    }
+  // Grille
+  let minHour = 24, maxHour = 0;
+  for(const h of byHour.keys()){
+    minHour = Math.min(minHour, h);
+    maxHour = Math.max(maxHour, h);
   }
+  if (minHour === 24){ minHour = 5; maxHour = 20; }
 
-  return segments;
-}
+  const cuts = hourCutsFromRules(rules);
+  const tbody = document.getElementById("tbody");
 
-const freqSegments = buildFrequencySegments(rules);
-
-document.getElementById("freqBar").innerHTML = freqSegments.map(seg => {
-  const {h1,m1,h2,m2,f} = seg;
-  const width = (toMin(h2,m2) - toMin(h1,m1));
-
-  if(f === null){
-    return `
-      <div class="seg" data-f="none" style="flex:${width}">
-        <div class="t">${labelRange(h1,m1,h2,m2)}</div>
-        <div class="s">Pas de service</div>
-      </div>
+  let html = "";
+  for(let h=minHour; h<=maxHour; h++){
+    const mins = byHour.get(h) || [];
+    const cutClass = cuts.has(h) ? "cut" : "";
+    const peakClass = isPeakHour(h, rules) ? "peak" : "";
+    html += `
+      <tr class="${cutClass} ${peakClass}">
+        <td class="hcol">${pad2(h)}h</td>
+        <td class="mins">${renderMinutesChips(mins)}</td>
+        <td class="mins">${renderMinutesChips(mins)}</td>
+      </tr>
     `;
   }
+  tbody.innerHTML = html;
 
-  return `
-    <div class="seg" data-f="${f}" style="flex:${width}">
-      <div class="t">${labelRange(h1,m1,h2,m2)}</div>
-      <div class="s">toutes les ${f} min</div>
-    </div>
-  `;
-}).join("");
+  // Fréquences
+  const freqSegments = buildFrequencySegments(rules);
+  document.getElementById("freqBar").innerHTML = freqSegments.map(seg => {
+    const {h1,m1,h2,m2,f} = seg;
+    const width = (toMin(h2,m2) - toMin(h1,m1));
+
+    if(f === null){
+      return `
+        <div class="seg" data-f="none" style="flex:${width}">
+          <div class="t">${labelRange(h1,m1,h2,m2)}</div>
+          <div class="s">Pas de service</div>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="seg" data-f="${f}" style="flex:${width}">
+        <div class="t">${labelRange(h1,m1,h2,m2)}</div>
+        <div class="s">toutes les ${f} min</div>
+      </div>
+    `;
+  }).join("");
+}
 </script>
 
 </body>
