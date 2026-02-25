@@ -472,83 +472,88 @@ function legendFromRules(rules){
 /* =========================
    CALCUL DU JOUR
 ========================= */
-const now = new Date();
-const todayISO = iso(now);
-const jf = frenchPublicHolidaysISO(now.getFullYear());
+function updateForDate(dateObj){
+  const todayISO = iso(dateObj);
+  const jf = frenchPublicHolidaysISO(dateObj.getFullYear());
 
-let periode = "normal";
-for (const p of VACANCES){
-  if (inRange(todayISO, p[0], p[1])) { periode="vacances"; break; }
+  let periode = "normal";
+  for (const p of VACANCES){
+    if (inRange(todayISO, p[0], p[1])) { periode="vacances"; break; }
+  }
+
+  let type = "luve";
+  if (dateObj.getDay() === 6) type = "sa";
+  if (dateObj.getDay() === 0 || jf.has(todayISO)) type = "di";
+
+  const rules = SERVICES[periode][type];
+
+  /* =========================
+     RENDU EN-TÊTE
+  ========================= */
+  document.documentElement.style.setProperty("--line", LINE.color);
+  document.getElementById("lineTitle").textContent = `${LINE.terminusA} ⇄ ${LINE.terminusB}`;
+  document.getElementById("dirATxt").textContent = `${LINE.terminusA} → ${LINE.terminusB}`;
+  document.getElementById("dirBTxt").textContent = `${LINE.terminusB} → ${LINE.terminusA}`;
+
+  const frDate = dateObj.toLocaleDateString("fr-FR",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+  document.getElementById("todayTxt").textContent = `Horaires du jour — ${frDate}`;
+
+  const labelPeriode = (periode==="vacances") ? "Période vacances scolaires" : "Période normale";
+  const labelType = (type==="luve") ? "LU–VE" : (type==="sa") ? "Samedi" : "Dimanche & JF";
+
+  document.getElementById("periodLine").textContent =
+    `${labelPeriode} — ${labelType}${jf.has(todayISO) ? " (jour férié)" : ""}`;
+  document.getElementById("gridBadge").innerHTML =
+    `<span class="badgeDot"></span> ${labelType}`;
+
+  /* =========================
+     GRILLE
+  ========================= */
+  const departures = buildDeparturesContinuous(rules);
+
+  // Premier / dernier départ + reset si pas de service
+  if(departures.length > 0){
+    const first = minToHM(departures[0]);
+    const last  = minToHM(departures[departures.length-1]);
+
+    document.getElementById("firstDeparture").textContent = `${pad2(first.h)}:${pad2(first.m)}`;
+    document.getElementById("lastDeparture").textContent  = `${pad2(last.h)}:${pad2(last.m)}`;
+  } else {
+    document.getElementById("firstDeparture").textContent = "—";
+    document.getElementById("lastDeparture").textContent  = "—";
+  }
+
+  const byHour = groupByHour(departures);
+
+  // plage d’affichage
+  let minHour = 24, maxHour = 0;
+  for(const h of byHour.keys()){
+    minHour = Math.min(minHour, h);
+    maxHour = Math.max(maxHour, h);
+  }
+  if (minHour === 24){ minHour = 5; maxHour = 20; }
+
+  const cuts = hourCutsFromRules(rules);
+  const tbody = document.getElementById("tbody");
+
+  let html = "";
+  for(let h=minHour; h<=maxHour; h++){
+    const mins = byHour.get(h) || [];
+    const cutClass = cuts.has(h) ? "cut" : "";
+    const peakClass = isPeakHour(h, rules) ? "peak" : "";
+    html += `
+      <tr class="${cutClass} ${peakClass}">
+        <td class="hcol">${pad2(h)}h</td>
+        <td class="mins">${renderMinutesChips(mins)}</td>
+        <td class="mins">${renderMinutesChips(mins)}</td>
+      </tr>
+    `;
+  }
+  tbody.innerHTML = html;
+
+  // (Optionnel mais recommandé) Si ton bandeau fréquences existe déjà, appelle-le ici aussi :
+  // updateFreqBar(rules);
 }
-
-let type = "luve";
-if (now.getDay() === 6) type = "sa";
-if (now.getDay() === 0 || jf.has(todayISO)) type = "di";
-
-const rules = SERVICES[periode][type];
-
-/* =========================
-   RENDU EN-TÊTE
-========================= */
-document.documentElement.style.setProperty("--line", LINE.color);
-document.getElementById("lineTitle").textContent = `${LINE.terminusA} ⇄ ${LINE.terminusB}`;
-document.getElementById("dirATxt").textContent = `${LINE.terminusA} → ${LINE.terminusB}`;
-document.getElementById("dirBTxt").textContent = `${LINE.terminusB} → ${LINE.terminusA}`;
-
-const frDate = now.toLocaleDateString("fr-FR",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
-document.getElementById("todayTxt").textContent = `Horaires du jour — ${frDate}`;
-
-const labelPeriode = (periode==="vacances") ? "Période vacances scolaires" : "Période normale";
-const labelType = (type==="luve") ? "LU–VE" : (type==="sa") ? "Samedi" : "Dimanche & JF";
-
-document.getElementById("periodLine").textContent =
-  `${labelPeriode} — ${labelType}${jf.has(todayISO) ? " (jour férié)" : ""}`;
-document.getElementById("gridBadge").innerHTML =
-  `<span class="badgeDot"></span> ${labelType}`;
-
-/* =========================
-   GRILLE
-   -> mêmes horaires dans les 2 sens (pour l’instant)
-========================= */
-const departures = buildDeparturesContinuous(rules);
-  // Premier & dernier départ
-if(departures.length > 0){
-  const first = minToHM(departures[0]);
-  const last  = minToHM(departures[departures.length-1]);
-
-  document.getElementById("firstDeparture").textContent =
-    `${pad2(first.h)}:${pad2(first.m)}`;
-
-  document.getElementById("lastDeparture").textContent =
-    `${pad2(last.h)}:${pad2(last.m)}`;
-}
-const byHour = groupByHour(departures);
-
-// plage d’affichage
-let minHour = 24, maxHour = 0;
-for(const h of byHour.keys()){
-  minHour = Math.min(minHour, h);
-  maxHour = Math.max(maxHour, h);
-}
-if (minHour === 24){ minHour = 5; maxHour = 20; }
-
-const cuts = hourCutsFromRules(rules);
-const tbody = document.getElementById("tbody");
-
-let html = "";
-for(let h=minHour; h<=maxHour; h++){
-  const mins = byHour.get(h) || [];
-  const cutClass = cuts.has(h) ? "cut" : "";
-  const peakClass = isPeakHour(h, rules) ? "peak" : "";
-  html += `
-    <tr class="${cutClass} ${peakClass}">
-      <td class="hcol">${pad2(h)}h</td>
-      <td class="mins">${renderMinutesChips(mins)}</td>
-      <td class="mins">${renderMinutesChips(mins)}</td>
-    </tr>
-  `;
-}
-tbody.innerHTML = html;
 
 // légende fréquences
 const freqs = legendFromRules(rules);
