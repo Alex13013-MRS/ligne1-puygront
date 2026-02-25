@@ -306,46 +306,31 @@ document.getElementById("periodLine").textContent =
 document.getElementById("gridBadge").textContent = labelType;
 
 /* =========================
-   GRILLE (2 directions)
-   - A: départs de base
-   - B: départs +6 min
+   GRILLE (2 directions identiques)
 ========================= */
 const rules = SERVICES[periode][type];
-const departuresA = buildDepartures(rules);
+const departures = buildDepartures(rules);
 
-function shiftTimes(times, offsetMin){
-  const out = [];
-  for(const t of times){
-    let tt = t + offsetMin;
-    // sécurité si jamais ça dépasse minuit
-    tt = ((tt % 1440) + 1440) % 1440;
-    out.push(tt);
-  }
-  return Array.from(new Set(out)).sort((a,b)=>a-b);
-}
+const byHour = groupByHour(departures);
 
-const departuresB = shiftTimes(departuresA, OFFSET_B_MIN);
-
-const byHourA = groupByHour(departuresA);
-const byHourB = groupByHour(departuresB);
-
-// Plage d’affichage : union des 2 directions
+// Plage d’affichage
 let minHour = 24, maxHour = 0;
-for (const h of byHourA.keys()){ minHour = Math.min(minHour, h); maxHour = Math.max(maxHour, h); }
-for (const h of byHourB.keys()){ minHour = Math.min(minHour, h); maxHour = Math.max(maxHour, h); }
+for (const h of byHour.keys()){
+  minHour = Math.min(minHour, h);
+  maxHour = Math.max(maxHour, h);
+}
 if (minHour === 24) { minHour = 5; maxHour = 20; } // fallback
 
 const tbody = document.getElementById("tbody");
 let html = "";
 
 for(let h=minHour; h<=maxHour; h++){
-  const minsA = byHourA.get(h) || [];
-  const minsB = byHourB.get(h) || [];
+  const mins = byHour.get(h) || [];
   html += `
     <tr>
       <td class="hcol">${pad2(h)}h</td>
-      <td class="mins">${renderMinutes(minsA)}</td>
-      <td class="mins">${renderMinutes(minsB)}</td>
+      <td class="mins">${renderMinutes(mins)}</td>
+      <td class="mins">${renderMinutes(mins)}</td>
     </tr>
   `;
 }
