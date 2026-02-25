@@ -536,6 +536,14 @@ document.getElementById("freqBar").innerHTML = rules.map(r => {
       <div class="t">${labelRange(h1,m1,h2,m2)}</div>
       <div class="s">toutes les ${f} min</div>
     </div>
+  if(f === null){
+  return `
+    <div class="seg" data-f="none" style="flex:${width}">
+      <div class="t">${labelRange(h1,m1,h2,m2)}</div>
+      <div class="s">Pas de service</div>
+    </div>
+  `;
+}
   `;
 }).join("");
 </script>
