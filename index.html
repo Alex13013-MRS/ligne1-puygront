@@ -582,6 +582,17 @@ function labelRange(h1,m1,h2,m2){
   const b = (h2===24 && m2===0) ? "00:00" : `${pad2(h2)}:${pad2(m2)}`;
   return `${a} – ${b}`;
 }
+document.getElementById("freqBar").innerHTML = rules.map(r => {
+  const [h1,m1,h2,m2,f] = r;
+  // largeur proportionnelle à la durée
+  const w = (toMin(h2,m2) - toMin(h1,m1));
+  return `
+    <div class="seg" data-f="${f}" style="flex:${w}">
+      <div class="t">${labelRange(h1,m1,h2,m2)}</div>
+      <div class="s">toutes les ${f} min</div>
+    </div>
+  `;
+}).join("");
 // =========================
 // Bandeau fréquences complet
 // =========================
