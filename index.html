@@ -515,6 +515,20 @@ if(departures.length > 0){
 
   document.getElementById("lastDeparture").textContent =
     `${pad2(last.h)}:${pad2(last.m)}`;
+
+  // Amplitude de service (durée entre premier et dernier départ)
+if (departures.length > 0) {
+  const firstT = departures[0];
+  const lastT  = departures[departures.length - 1];
+
+  const duration = Math.max(0, lastT - firstT);
+  const dh = Math.floor(duration / 60);
+  const dm = duration % 60;
+
+  document.getElementById("amplitude").textContent =
+    `${pad2(minToHM(firstT).h)}:${pad2(minToHM(firstT).m)} – ${pad2(minToHM(lastT).h)}:${pad2(minToHM(lastT).m)} (${dh}h${pad2(dm)})`;
+} else {
+  document.getElementById("amplitude").textContent = "Pas de service";
 }
 const byHour = groupByHour(departures);
 
