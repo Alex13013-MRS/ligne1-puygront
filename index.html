@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ligne 1</title>
+
+<style>
+body{
+  font-family:Arial,sans-serif;
+  margin:0;
+  padding:15px;
+}
+.badge{
+  display:inline-block;
+  padding:6px 10px;
+  border-radius:999px;
+  color:#fff;
+  font-weight:700;
+  background:#dc241f;
+}
+.header{
+  margin-bottom:15px;
+}
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+th,td{
+  border:1px solid #ddd;
+  padding:8px;
+  vertical-align:top;
+}
+th{
+  background:#f6f6f6;
+  text-align:left;
+}
+.times{
+  white-space:pre-line;
+}
+.small{
+  color:#555;
+  margin-bottom:10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <span class="badge">Ligne 1</span>
+  <div><strong>Campus Alan Turing ⇄ Gare Centrale</strong></div>
+  <div class="small" id="periode"></div>
+</div>
+
+<h3>Horaires du jour — <span id="date"></span></h3>
+
+<table>
+<tr>
+<th>Direction Campus Alan Turing → Gare Centrale</th>
+<th>Direction Gare Centrale → Campus Alan Turing</th>
+</tr>
+<tr>
+<td class="times" id="A"></td>
+<td class="times" id="B"></td>
+</tr>
+</table>
+
+<script>
+// ===== VACANCES SCOLAIRES =====
+const VACANCES = [
+["2025-10-18","2025-11-02"],
+["2025-12-20","2026-01-04"],
+["2026-02-07","2026-02-22"],
+["2026-04-04","2026-04-19"],
+["2026-07-04","2026-08-30"]
+];
+
+// ===== HORAIRES A MODIFIER =====
+const HORAIRES = {
+normal:{
+luve:{A:["06:00","06:15","06:30"],B:["06:05","06:20","06:35"]},
+sa:{A:["07:00","07:20"],B:["07:05","07:25"]},
+di:{A:["08:00","08:30"],B:["08:05","08:35"]}
+},
+vacances:{
+luve:{A:["06:10","06:30"],B:["06:15","06:35"]},
+sa:{A:["07:10","07:30"],B:["07:15","07:35"]},
+di:{A:["08:10","08:40"],B:["08:15","08:45"]}
+}
+};
+
+// ===== LOGIQUE =====
+function iso(d){
+return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+
+function inRange(date,start,end){
+return date>=start && date<=end;
+}
+
+const now=new Date();
+const todayISO=iso(now);
+
+let periode="normal";
+for(const p of VACANCES){
+if(inRange(todayISO,p[0],p[1])) periode="vacances";
+}
+
+let type="luve";
+if(now.getDay()==6) type="sa";
+if(now.getDay()==0) type="di";
+
+const data=HORAIRES[periode][type];
+
+document.getElementById("A").textContent=data.A.join("\n");
+document.getElementById("B").textContent=data.B.join("\n");
+
+document.getElementById("date").textContent=
+now.toLocaleDateString("fr-FR",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+
+document.getElementById("periode").textContent=
+(periode=="vacances"?"Période vacances scolaires":"Période normale")
++" — "+
+(type=="luve"?"LU–VE":type=="sa"?"Samedi":"Dimanche");
+</script>
+
+</body>
+</html>
