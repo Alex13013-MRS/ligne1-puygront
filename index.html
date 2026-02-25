@@ -151,6 +151,42 @@
     .hcol{width:58px}
     .mins .chip{min-width:26px}
   }
+  /* Bandeau fréquences */
+.freqCard{
+  border:1px solid var(--border);
+  border-radius:14px;
+  overflow:hidden;
+  margin-bottom:12px;
+  background:#fff;
+}
+.freqHead{
+  padding:10px 12px;
+  border-bottom:1px solid var(--border);
+  display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;
+}
+.freqBar{
+  display:flex;
+  width:100%;
+  min-height:54px;
+}
+.seg{
+  position:relative;
+  padding:10px 10px 10px 12px;
+  border-right:1px solid rgba(0,0,0,.06);
+  display:flex;flex-direction:column;justify-content:center;
+}
+.seg:last-child{border-right:0}
+.seg .t{font-weight:900;font-size:13px}
+.seg .s{color:var(--muted);font-weight:900;font-size:12px;margin-top:2px}
+.seg:before{
+  content:"";
+  position:absolute;left:0;top:0;bottom:0;width:6px;
+  background:var(--line);
+  opacity:.18;
+}
+.seg[data-f="16"]:before{opacity:.45;}
+.seg[data-f="24"]:before{opacity:.30;}
+.seg[data-f="48"]:before{opacity:.18;}
 
   .icon{width:16px;height:16px;display:inline-block;vertical-align:-3px}
 </style>
