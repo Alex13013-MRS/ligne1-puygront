@@ -210,11 +210,6 @@
         </div>
 
         <div>
-          <div class="muted">Dernière arrivée estimée</div>
-          <div class="k" id="lastArrival">—</div>
-        </div>
-
-        <div>
           <div class="muted">Choisir une date</div>
           <input type="date" id="datePicker">
         </div>
@@ -271,7 +266,6 @@ const LINE = {
   terminusA: "Campus Alan Turing",
   terminusB: "Gare Centrale"
 };
-const TRAVEL_MIN = 24;
 
 /* =========================
    VACANCES SCOLAIRES (inclusives) 2025-2026
@@ -489,14 +483,9 @@ function updateForDate(dateObj){
 
     document.getElementById("firstDeparture").textContent = `${pad2(first.h)}:${pad2(first.m)}`;
     document.getElementById("lastDeparture").textContent  = `${pad2(last.h)}:${pad2(last.m)}`;
-
-    const arrivalT = (departures[departures.length-1] + TRAVEL_MIN) % 1440;
-    const a = minToHM(arrivalT);
-    document.getElementById("lastArrival").textContent = `${pad2(a.h)}:${pad2(a.m)}`;
   } else {
     document.getElementById("firstDeparture").textContent = "—";
     document.getElementById("lastDeparture").textContent  = "—";
-    document.getElementById("lastArrival").textContent    = "—";
   }
 
   // Bandeau fréquences
