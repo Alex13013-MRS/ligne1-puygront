@@ -500,6 +500,17 @@ document.getElementById("gridBadge").innerHTML =
    -> mêmes horaires dans les 2 sens (pour l’instant)
 ========================= */
 const departures = buildDeparturesContinuous(rules);
+  // Premier & dernier départ
+if(departures.length > 0){
+  const first = minToHM(departures[0]);
+  const last  = minToHM(departures[departures.length-1]);
+
+  document.getElementById("firstDeparture").textContent =
+    `${pad2(first.h)}:${pad2(first.m)}`;
+
+  document.getElementById("lastDeparture").textContent =
+    `${pad2(last.h)}:${pad2(last.m)}`;
+}
 const byHour = groupByHour(departures);
 
 // plage d’affichage
