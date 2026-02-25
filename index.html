@@ -307,30 +307,46 @@ document.getElementById("gridBadge").textContent = labelType;
 
 /* =========================
    GRILLE (2 directions)
-   -> mêmes départs des 2 côtés tant qu’on n’a pas de décalage
+   - A: départs de base
+   - B: départs +6 min
 ========================= */
+const OFFSET_B_MIN = 6; // Gare Centrale -> Campus Alan Turing = +6 minutes
 const rules = SERVICES[periode][type];
-const departures = buildDepartures(rules);
-const byHour = groupByHour(departures);
+const departuresA = buildDepartures(rules);
 
-// Plage d’affichage : de la 1ère heure active à la dernière heure active
-let minHour = 24, maxHour = 0;
-for (const h of byHour.keys()){
-  if (h < minHour) minHour = h;
-  if (h > maxHour) maxHour = h;
+function shiftTimes(times, offsetMin){
+  const out = [];
+  for(const t of times){
+    let tt = t + offsetMin;
+    // sécurité si jamais ça dépasse minuit
+    tt = ((tt % 1440) + 1440) % 1440;
+    out.push(tt);
+  }
+  return Array.from(new Set(out)).sort((a,b)=>a-b);
 }
+
+const departuresB = shiftTimes(departuresA, OFFSET_B_MIN);
+
+const byHourA = groupByHour(departuresA);
+const byHourB = groupByHour(departuresB);
+
+// Plage d’affichage : union des 2 directions
+let minHour = 24, maxHour = 0;
+for (const h of byHourA.keys()){ minHour = Math.min(minHour, h); maxHour = Math.max(maxHour, h); }
+for (const h of byHourB.keys()){ minHour = Math.min(minHour, h); maxHour = Math.max(maxHour, h); }
 if (minHour === 24) { minHour = 5; maxHour = 20; } // fallback
 
 const tbody = document.getElementById("tbody");
 let html = "";
 
 for(let h=minHour; h<=maxHour; h++){
-  const mins = byHour.get(h) || [];
+  const minsA = byHourA.get(h) || [];
+  const minsB = byHourB.get(h) || [];
   html += `
     <tr>
       <td class="hcol">${pad2(h)}h</td>
-      <td class="mins">${renderMinutes(mins)}</td>
-      <td class="mins">${renderMinutes(mins)}</td>
+      <td class="mins">${renderMinutes(minsA)}</td>
+      <td class="mins">${renderMinutes(minsB)}</td>
     </tr>
   `;
 }
