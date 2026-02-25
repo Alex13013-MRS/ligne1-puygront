@@ -174,19 +174,17 @@
   padding:10px 10px 10px 12px;
   border-right:1px solid rgba(0,0,0,.06);
   display:flex;flex-direction:column;justify-content:center;
+  background:#fff;
 }
 .seg:last-child{border-right:0}
-.seg .t{font-weight:900;font-size:13px}
-.seg .s{color:var(--muted);font-weight:900;font-size:12px;margin-top:2px}
-.seg:before{
-  content:"";
-  position:absolute;left:0;top:0;bottom:0;width:6px;
-  background:var(--line);
-  opacity:.18;
+
+.seg[data-f="none"]{
+  background:#f2f2f4;
+  color:#9a9aa5;
 }
-.seg[data-f="16"]:before{opacity:.45;}
-.seg[data-f="24"]:before{opacity:.30;}
-.seg[data-f="48"]:before{opacity:.18;}
+.seg[data-f="none"] .t{
+  font-weight:800;
+}
 
   .icon{width:16px;height:16px;display:inline-block;vertical-align:-3px}
 </style>
@@ -577,24 +575,13 @@ const freqs = legendFromRules(rules);
 document.getElementById("legendBox").innerHTML = freqs.map(f => {
   const dotClass = (f === 16) ? "dot strong" : "dot";
   return `<span class="pill"><span class="${dotClass}"></span><b>${f}</b> min</span>`;
-  
+}).join("");
 // Bandeau fréquences (segments)
 function labelRange(h1,m1,h2,m2){
   const a = `${pad2(h1)}:${pad2(m1)}`;
   const b = (h2===24 && m2===0) ? "00:00" : `${pad2(h2)}:${pad2(m2)}`;
   return `${a} – ${b}`;
 }
-document.getElementById("freqBar").innerHTML = rules.map(r => {
-  const [h1,m1,h2,m2,f] = r;
-  // largeur proportionnelle à la durée
-  const w = (toMin(h2,m2) - toMin(h1,m1));
-  return `
-    <div class="seg" data-f="${f}" style="flex:${w}">
-      <div class="t">${labelRange(h1,m1,h2,m2)}</div>
-      <div class="s">toutes les ${f} min</div>
-    </div>
-  `;
-}).join("");
 // =========================
 // Bandeau fréquences complet
 // =========================
