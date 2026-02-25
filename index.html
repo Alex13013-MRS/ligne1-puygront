@@ -210,11 +210,6 @@
         </div>
 
         <div>
-          <div class="muted">Amplitude</div>
-          <div class="k" id="amplitude">—</div>
-        </div>
-
-        <div>
           <div class="muted">Dernière arrivée estimée</div>
           <div class="k" id="lastArrival">—</div>
         </div>
@@ -290,9 +285,8 @@ const VACANCES = [
 ];
 
 /* =========================
-   SERVICES LIGNE 1 (TES FRÉQUENCES)
-   Chaque entrée = [deHH, deMM, àHH, àMM, fréquenceMinutes]
-   fin exclusive ; 0h00 = 24:00
+   SERVICES LIGNE 1
+   Dimanche & JF : 09:00 → 18:00 (48 min)
 ========================= */
 const SERVICES = {
   normal: {
@@ -301,7 +295,6 @@ const SERVICES = {
       [7,0, 9,0, 16],
       [9,0, 16,0, 24],
       [16,0, 20,0, 16],
-      // pas de service 20h-0h
     ],
     sa: [
       [5,0, 8,0, 24],
@@ -310,7 +303,7 @@ const SERVICES = {
       [20,0, 24,0, 48],
     ],
     di: [
-      [10,0, 19,0, 48],
+      [9,0, 18,0, 48],
     ]
   },
 
@@ -327,7 +320,7 @@ const SERVICES = {
       [17,0, 20,0, 24],
     ],
     di: [
-      [10,0, 19,0, 48],
+      [9,0, 18,0, 48],
     ]
   }
 };
@@ -379,7 +372,7 @@ function buildDeparturesContinuous(rules){
   const times = [];
   if(!rules || rules.length===0) return times;
 
-  let t = toMin(rules[0][0], rules[0][1]); // premier départ = début 1ère plage (05:00)
+  let t = toMin(rules[0][0], rules[0][1]);
   for(const [h1,m1,h2,m2,f] of rules){
     const start = toMin(h1,m1);
     const end   = toMin(h2,m2);
@@ -488,7 +481,6 @@ function updateForDate(dateObj){
   document.getElementById("gridBadge").innerHTML =
     `<span class="badgeDot"></span> ${labelType}`;
 
-  // Départs + indicateurs
   const departures = buildDeparturesContinuous(rules);
 
   if(departures.length > 0){
@@ -498,19 +490,12 @@ function updateForDate(dateObj){
     document.getElementById("firstDeparture").textContent = `${pad2(first.h)}:${pad2(first.m)}`;
     document.getElementById("lastDeparture").textContent  = `${pad2(last.h)}:${pad2(last.m)}`;
 
-    const duration = departures[departures.length-1] - departures[0];
-    const dh = Math.floor(duration/60);
-    const dm = duration%60;
-    document.getElementById("amplitude").textContent =
-      `${pad2(first.h)}:${pad2(first.m)} – ${pad2(last.h)}:${pad2(last.m)} (${dh}h${pad2(dm)})`;
-
     const arrivalT = (departures[departures.length-1] + TRAVEL_MIN) % 1440;
     const a = minToHM(arrivalT);
     document.getElementById("lastArrival").textContent = `${pad2(a.h)}:${pad2(a.m)}`;
   } else {
     document.getElementById("firstDeparture").textContent = "—";
     document.getElementById("lastDeparture").textContent  = "—";
-    document.getElementById("amplitude").textContent      = "Pas de service";
     document.getElementById("lastArrival").textContent    = "—";
   }
 
