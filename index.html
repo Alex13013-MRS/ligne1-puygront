@@ -3,71 +3,144 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Ligne 1</title>
-
+<title>Transport-Manager — Ligne 1</title>
 <style>
-body{
-  font-family:Arial,sans-serif;
-  margin:0;
-  padding:15px;
-}
-.badge{
-  display:inline-block;
-  padding:6px 10px;
-  border-radius:999px;
-  color:#fff;
-  font-weight:700;
-  background:#dc241f;
-}
-.header{
-  margin-bottom:15px;
-}
-table{
-  width:100%;
-  border-collapse:collapse;
-}
-th,td{
-  border:1px solid #ddd;
-  padding:8px;
-  vertical-align:top;
-}
-th{
-  background:#f6f6f6;
-  text-align:left;
-}
-.times{
-  white-space:pre-line;
-}
-.small{
-  color:#555;
-  margin-bottom:10px;
-}
+  :root{
+    --line:#dc241f;
+    --bg:#ffffff;
+    --soft:#f6f6f7;
+    --border:#e5e5e7;
+    --text:#111;
+    --muted:#5b5b66;
+  }
+  body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--text);}
+  .wrap{max-width:1100px;margin:0 auto;padding:14px;}
+  .card{border:1px solid var(--border);border-radius:14px;overflow:hidden;background:#fff;}
+  .topbar{background:var(--line);color:#fff;padding:12px 14px;}
+  .topbar .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;}
+  .linepill{
+    display:inline-flex;align-items:center;gap:8px;
+    background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.22);
+    padding:6px 10px;border-radius:999px;font-weight:700;
+  }
+  .subpill{
+    display:inline-flex;align-items:center;gap:8px;
+    background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);
+    padding:6px 10px;border-radius:999px;font-weight:700;
+  }
+  .title{font-size:18px;font-weight:800;margin:6px 0 0;}
+  .subtitle{opacity:.95;margin:4px 0 0;font-size:13px}
+  .content{padding:14px;}
+  .muted{color:var(--muted)}
+  .legend{margin-top:10px;color:var(--muted);font-size:12px;line-height:1.45}
+
+  /* grille */
+  .gridCard{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-top:12px;}
+  .gridHead{
+    background:var(--soft);
+    padding:10px 12px;
+    border-bottom:1px solid var(--border);
+    display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;
+  }
+  .gridHead strong{font-size:14px}
+  .badge{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:4px 8px;border-radius:999px;border:1px solid var(--border);
+    background:#fff;color:var(--muted);font-size:12px;font-weight:700;
+  }
+
+  table{width:100%;border-collapse:collapse;}
+  th,td{border-top:1px solid var(--border);padding:8px 10px;vertical-align:top;}
+  th{background:#fff;position:sticky;top:0;z-index:1}
+  .hcol{width:70px;color:var(--muted);font-weight:800}
+  .mins{font-variant-numeric:tabular-nums;line-height:1.45}
+  .mins span{display:inline-block;min-width:26px;margin-right:6px}
+  .empty{color:#9a9aa5}
+  @media (max-width:720px){
+    .hcol{width:56px}
+    .mins span{min-width:24px}
+  }
+
+  .icon{width:16px;height:16px;display:inline-block;vertical-align:-3px}
 </style>
 </head>
-
 <body>
 
-<div class="header">
-  <span class="badge">Ligne 1</span>
-  <div><strong>Campus Alan Turing ⇄ Gare Centrale</strong></div>
-  <div class="small" id="periode"></div>
+<div class="wrap">
+  <div class="card">
+    <div class="topbar">
+      <div class="row">
+        <div>
+          <div class="linepill">
+            <svg class="icon" viewBox="0 0 24 24" fill="none">
+              <path d="M4 16V7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v9" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              <path d="M6 16h12" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              <path d="M7.5 19a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" fill="white"/>
+              <path d="M16.5 19a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z" fill="white"/>
+            </svg>
+            Ligne 1
+          </div>
+          <div class="title" id="lineTitle">Campus Alan Turing ⇄ Gare Centrale</div>
+          <div class="subtitle">Fiche horaire — grille par heure</div>
+        </div>
+
+        <div class="subpill">
+          <svg class="icon" viewBox="0 0 24 24" fill="none">
+            <path d="M7 3v3M17 3v3" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            <path d="M4 8h16" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            <path d="M6 21h12a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2Z" stroke="white" stroke-width="2"/>
+          </svg>
+          <span id="todayTxt">Horaires du jour</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="muted" id="periodLine"></div>
+
+      <div class="gridCard">
+        <div class="gridHead">
+          <strong id="gridTitle">Départs — 2 directions</strong>
+          <span class="badge" id="gridBadge">Service</span>
+        </div>
+
+        <div style="overflow:auto">
+          <table>
+            <thead>
+              <tr>
+                <th class="hcol">Heure</th>
+                <th id="thA">Direction A → B</th>
+                <th id="thB">Direction B → A</th>
+              </tr>
+            </thead>
+            <tbody id="tbody">
+              <!-- rempli par JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="legend">
+        <div><strong>Info :</strong> les <strong>jours fériés (France)</strong> basculent sur le service <strong>Dimanche & JF</strong>.</div>
+        <div class="muted">Hypothèse actuelle : la première minute de chaque plage démarre à <strong>HH:00</strong>. Donne-moi un décalage si besoin (ex : 05:12).</div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<h3>Horaires du jour — <span id="date"></span></h3>
-
-<table>
-<tr>
-<th>Direction Campus Alan Turing → Gare Centrale</th>
-<th>Direction Gare Centrale → Campus Alan Turing</th>
-</tr>
-<tr>
-<td class="times" id="A"></td>
-<td class="times" id="B"></td>
-</tr>
-</table>
-
 <script>
-// ===== VACANCES SCOLAIRES =====
+/* =========================
+   CONFIG LIGNE
+========================= */
+const LINE = {
+  color: "#dc241f",
+  terminusA: "Campus Alan Turing",
+  terminusB: "Gare Centrale"
+};
+
+/* =========================
+   VACANCES SCOLAIRES (inclusives)
+========================= */
 const VACANCES = [
   ["2025-10-18","2025-11-02"],
   ["2025-12-20","2026-01-04"],
@@ -76,101 +149,193 @@ const VACANCES = [
   ["2026-07-04","2026-08-30"]
 ];
 
-// ===== HORAIRES A MODIFIER =====
-const HORAIRES = {
-  normal:{
-    luve:{A:["06:00","06:15","06:30"],B:["06:05","06:20","06:35"]},
-    sa:{A:["07:00","07:20"],B:["07:05","07:25"]},
-    di:{A:["08:00","08:30"],B:["08:05","08:35"]}
+/* =========================
+   SERVICES (TES RÈGLES)
+   Chaque entrée = [deHH, deMM, àHH, àMM, fréquenceMinutes]
+   (fin exclusive)
+========================= */
+const SERVICES = {
+  normal: {
+    luve: [
+      [5,0, 7,0, 24],
+      [7,0, 9,0, 16],
+      [9,0, 16,0, 24],
+      [16,0, 20,0, 16],
+    ],
+    sa: [
+      [5,0, 8,0, 24],
+      [8,0, 17,0, 24],
+      [17,0, 20,0, 24],
+      [20,0, 24,0, 48], // 20h -> 0h
+    ],
+    di: [
+      [10,0, 19,0, 48],
+    ]
   },
-  vacances:{
-    luve:{A:["06:10","06:30"],B:["06:15","06:35"]},
-    sa:{A:["07:10","07:30"],B:["07:15","07:35"]},
-    di:{A:["08:10","08:40"],B:["08:15","08:45"]}
+  vacances: {
+    luve: [
+      [5,0, 7,0, 24],
+      [7,0, 9,0, 24],
+      [9,0, 16,0, 24],
+      [16,0, 20,0, 24],
+    ],
+    sa: [
+      [5,0, 8,0, 24],
+      [8,0, 17,0, 24],
+      [17,0, 20,0, 24],
+    ],
+    di: [
+      [10,0, 19,0, 48],
+    ]
   }
 };
 
-// ===== OUTILS DATE =====
+/* =========================
+   OUTILS DATE
+========================= */
 function pad2(n){ return String(n).padStart(2,"0"); }
 function iso(d){ return d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate()); }
-function addDays(dateObj, days){
-  const d = new Date(dateObj.getTime());
-  d.setDate(d.getDate() + days);
-  return d;
-}
 function inRange(dateISO,start,end){ return dateISO>=start && dateISO<=end; }
 
-// ===== PÂQUES (algorithme de Meeus - calendrier grégorien) =====
+/* Pâques (Meeus, grégorien) */
 function easterSunday(year){
-  // Renvoie un Date (dimanche de Pâques)
-  const a = year % 19;
-  const b = Math.floor(year / 100);
-  const c = year % 100;
-  const d = Math.floor(b / 4);
-  const e = b % 4;
-  const f = Math.floor((b + 8) / 25);
-  const g = Math.floor((b - f + 1) / 3);
-  const h = (19*a + b - d - g + 15) % 30;
-  const i = Math.floor(c / 4);
-  const k = c % 4;
-  const l = (32 + 2*e + 2*i - h - k) % 7;
-  const m = Math.floor((a + 11*h + 22*l) / 451);
-  const month = Math.floor((h + l - 7*m + 114) / 31);     // 3=mars, 4=avril
-  const day = ((h + l - 7*m + 114) % 31) + 1;
-  return new Date(year, month - 1, day);
+  const a=year%19, b=Math.floor(year/100), c=year%100, d=Math.floor(b/4), e=b%4;
+  const f=Math.floor((b+8)/25), g=Math.floor((b-f+1)/3);
+  const h=(19*a + b - d - g + 15)%30;
+  const i=Math.floor(c/4), k=c%4;
+  const l=(32 + 2*e + 2*i - h - k)%7;
+  const m=Math.floor((a + 11*h + 22*l)/451);
+  const month=Math.floor((h + l - 7*m + 114)/31);
+  const day=((h + l - 7*m + 114)%31)+1;
+  return new Date(year, month-1, day);
 }
-
-// ===== JOURS FÉRIÉS FRANCE (nationaux) =====
+function addDays(dateObj, days){ const d=new Date(dateObj.getTime()); d.setDate(d.getDate()+days); return d; }
 function frenchPublicHolidaysISO(year){
-  // 11 jours fériés nationaux (cas général, France métropolitaine)
-  // + jours mobiles calculés depuis Pâques (Lundi de Pâques, Ascension, Lundi de Pentecôte)
-  const easter = easterSunday(year);
-  const holidays = [
-    `${year}-01-01`, // Jour de l'an
+  const easter=easterSunday(year);
+  const list = [
+    `${year}-01-01`,
     iso(addDays(easter, 1)),   // Lundi de Pâques
-    `${year}-05-01`, // Fête du Travail
-    `${year}-05-08`, // Victoire 1945
+    `${year}-05-01`,
+    `${year}-05-08`,
     iso(addDays(easter, 39)),  // Ascension
     iso(addDays(easter, 50)),  // Lundi de Pentecôte
-    `${year}-07-14`, // Fête nationale
-    `${year}-08-15`, // Assomption
-    `${year}-11-01`, // Toussaint
-    `${year}-11-11`, // Armistice 1918
-    `${year}-12-25`  // Noël
+    `${year}-07-14`,
+    `${year}-08-15`,
+    `${year}-11-01`,
+    `${year}-11-11`,
+    `${year}-12-25`
   ];
-  return new Set(holidays);
+  return new Set(list);
 }
 
-// ===== LOGIQUE AFFICHAGE =====
+/* =========================
+   GÉNÉRATION HORAIRES
+========================= */
+function toMin(h,m){ return h*60 + m; }
+function minToHM(t){
+  const h = Math.floor(t/60);
+  const m = t%60;
+  return {h, m};
+}
+function buildDepartures(rules){
+  // rules: [[h1,m1,h2,m2,f], ...]
+  const times = [];
+  for(const [h1,m1,h2,m2,f] of rules){
+    let start = toMin(h1,m1);
+    let end = toMin(h2,m2);
+    for(let t=start; t<end; t+=f){
+      times.push(t);
+    }
+  }
+  // dédoublonne + tri
+  return Array.from(new Set(times)).sort((a,b)=>a-b);
+}
+
+function groupByHour(times){
+  // returns map hour -> [minutes]
+  const map = new Map();
+  for(const t of times){
+    const {h,m} = minToHM(t);
+    if(!map.has(h)) map.set(h, []);
+    map.get(h).push(m);
+  }
+  // tri minutes
+  for(const [h, arr] of map.entries()){
+    arr.sort((a,b)=>a-b);
+    map.set(h, arr);
+  }
+  return map;
+}
+
+function renderMinutes(arr){
+  if(!arr || arr.length===0) return `<span class="empty">—</span>`;
+  return arr.map(m => `<span>${pad2(m)}</span>`).join("");
+}
+
+/* =========================
+   CALCUL DU JOUR (période + type)
+========================= */
 const now = new Date();
 const todayISO = iso(now);
-
-let periode = "normal";
-for (const p of VACANCES) {
-  if (inRange(todayISO, p[0], p[1])) { periode = "vacances"; break; }
-}
-
-// Jours fériés auto (année courante)
 const jf = frenchPublicHolidaysISO(now.getFullYear());
 
-// Type de jour : LU-VE / SA / DI & JF
+let periode = "normal";
+for (const p of VACANCES){
+  if (inRange(todayISO, p[0], p[1])) { periode="vacances"; break; }
+}
+
 let type = "luve";
-if (now.getDay() === 6) type = "sa";            // samedi
-if (now.getDay() === 0 || jf.has(todayISO)) type = "di"; // dimanche OU jour férié
+if (now.getDay() === 6) type = "sa";
+if (now.getDay() === 0 || jf.has(todayISO)) type = "di";
 
-const data = HORAIRES[periode][type];
+const labelPeriode = (periode==="vacances") ? "Période vacances scolaires" : "Période normale";
+const labelType = (type==="luve") ? "LU–VE" : (type==="sa") ? "Samedi" : "Dimanche & JF";
 
-// Rendu
-document.getElementById("A").textContent = data.A.join("\n");
-document.getElementById("B").textContent = data.B.join("\n");
+/* =========================
+   RENDU EN-TÊTE
+========================= */
+document.documentElement.style.setProperty("--line", LINE.color);
+document.getElementById("lineTitle").textContent = `${LINE.terminusA} ⇄ ${LINE.terminusB}`;
+document.getElementById("thA").textContent = `Direction ${LINE.terminusA} → ${LINE.terminusB}`;
+document.getElementById("thB").textContent = `Direction ${LINE.terminusB} → ${LINE.terminusA}`;
 
-document.getElementById("date").textContent =
-  now.toLocaleDateString("fr-FR",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+const frDate = now.toLocaleDateString("fr-FR",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+document.getElementById("todayTxt").textContent = `Horaires du jour — ${frDate}`;
+document.getElementById("periodLine").textContent =
+  `${labelPeriode} — ${labelType}${jf.has(todayISO) ? " (jour férié)" : ""}`;
+document.getElementById("gridBadge").textContent = labelType;
 
-document.getElementById("periode").textContent =
-  (periode==="vacances" ? "Période vacances scolaires" : "Période normale")
-  + " — "
-  + (type==="luve" ? "LU–VE" : type==="sa" ? "Samedi" : "Dimanche & JF");
+/* =========================
+   GRILLE (2 directions)
+   -> mêmes départs des 2 côtés tant qu’on n’a pas de décalage
+========================= */
+const rules = SERVICES[periode][type];
+const departures = buildDepartures(rules);
+const byHour = groupByHour(departures);
+
+// Plage d’affichage : de la 1ère heure active à la dernière heure active
+let minHour = 24, maxHour = 0;
+for (const h of byHour.keys()){
+  if (h < minHour) minHour = h;
+  if (h > maxHour) maxHour = h;
+}
+if (minHour === 24) { minHour = 5; maxHour = 20; } // fallback
+
+const tbody = document.getElementById("tbody");
+let html = "";
+
+for(let h=minHour; h<=maxHour; h++){
+  const mins = byHour.get(h) || [];
+  html += `
+    <tr>
+      <td class="hcol">${pad2(h)}h</td>
+      <td class="mins">${renderMinutes(mins)}</td>
+      <td class="mins">${renderMinutes(mins)}</td>
+    </tr>
+  `;
+}
+
+tbody.innerHTML = html;
 </script>
 
 </body>
