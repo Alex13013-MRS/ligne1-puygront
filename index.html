@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="fr">
 <head>
@@ -223,12 +222,25 @@
 
     <div class="content">
       <div class="info">
-        <div>
-          <div class="muted">Service du jour</div>
-          <div class="k" id="periodLine">…</div>
-        </div>
-        <div class="badge" id="gridBadge"><span class="badgeDot"></span> …</div>
-      </div>
+  <div>
+    <div class="muted">Service du jour</div>
+    <div class="k" id="periodLine">…</div>
+  </div>
+
+  <div>
+    <div class="muted">Premier départ</div>
+    <div class="k" id="firstDeparture">--:--</div>
+  </div>
+
+  <div>
+    <div class="muted">Dernier départ</div>
+    <div class="k" id="lastDeparture">--:--</div>
+  </div>
+
+  <div class="badge" id="gridBadge">
+    <span class="badgeDot"></span> …
+  </div>
+</div>
 
       <div class="freqCard">
         <div class="freqHead">
@@ -488,6 +500,17 @@ document.getElementById("gridBadge").innerHTML =
    -> mêmes horaires dans les 2 sens (pour l’instant)
 ========================= */
 const departures = buildDeparturesContinuous(rules);
+  // Premier & dernier départ
+if(departures.length > 0){
+  const first = minToHM(departures[0]);
+  const last  = minToHM(departures[departures.length-1]);
+
+  document.getElementById("firstDeparture").textContent =
+    `${pad2(first.h)}:${pad2(first.m)}`;
+
+  document.getElementById("lastDeparture").textContent =
+    `${pad2(last.h)}:${pad2(last.m)}`;
+}
 const byHour = groupByHour(departures);
 
 // plage d’affichage
@@ -528,12 +551,63 @@ function labelRange(h1,m1,h2,m2){
   const b = (h2===24 && m2===0) ? "00:00" : `${pad2(h2)}:${pad2(m2)}`;
   return `${a} – ${b}`;
 }
-document.getElementById("freqBar").innerHTML = rules.map(r => {
-  const [h1,m1,h2,m2,f] = r;
-  // largeur proportionnelle à la durée
-  const w = (toMin(h2,m2) - toMin(h1,m1));
+// =========================
+// Bandeau fréquences complet
+// =========================
+
+function labelRange(h1,m1,h2,m2){
+  const a = `${pad2(h1)}:${pad2(m1)}`;
+  const b = (h2===24 && m2===0) ? "00:00" : `${pad2(h2)}:${pad2(m2)}`;
+  return `${a} – ${b}`;
+}
+
+function buildFrequencySegments(rules){
+  const segments = [];
+
+  // Avant premier service
+  const first = rules[0];
+  if(first){
+    const [h1,m1] = first;
+    if(h1 > 0 || m1 > 0){
+      segments.push({h1:0,m1:0,h2:h1,m2:m1,f:null});
+    }
+  }
+
+  // Segments de service
+  for(const r of rules){
+    const [h1,m1,h2,m2,f] = r;
+    segments.push({h1,m1,h2,m2,f});
+  }
+
+  // Après dernier service
+  const last = rules[rules.length-1];
+  if(last){
+    const [h1,m1,h2,m2] = last;
+    if(h2 < 24){
+      segments.push({h1:h2,m1:m2,h2:24,m2:0,f:null});
+    }
+  }
+
+  return segments;
+}
+
+const freqSegments = buildFrequencySegments(rules);
+
+document.getElementById("freqBar").innerHTML = freqSegments.map(seg => {
+  const {h1,m1,h2,m2,f} = seg;
+  const width = (toMin(h2,m2) - toMin(h1,m1));
+
+  if(f === null){
+    return `
+      <div class="seg" data-f="none" style="flex:${width}">
+        <div class="t">${labelRange(h1,m1,h2,m2)}</div>
+        <div class="s">Pas de service</div>
+      </div>
+    `;
+  }
+
   return `
-    <div class="seg" data-f="${f}" style="flex:${w}">
+    <div class="seg" data-f="${f}" style="flex:${width}">
       <div class="t">${labelRange(h1,m1,h2,m2)}</div>
       <div class="s">toutes les ${f} min</div>
     </div>
